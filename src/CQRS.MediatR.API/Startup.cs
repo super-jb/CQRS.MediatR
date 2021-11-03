@@ -1,7 +1,6 @@
 using CQRS.MediatR.API.CQRS.PipelineBehaviors;
 using CQRS.MediatR.API.Database;
 using CQRS.MediatR.API.Filters;
-using CQRS.MediatR.API.Validations;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
@@ -37,14 +36,12 @@ namespace CQRS.MediatR.API
             services.AddMemoryCache();
 
             // Add validators
-            services.AddValidators();
-            
+            services.AddValidatorsFromAssembly(typeof(Startup).Assembly);
+
             // Pipeline order is important
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CachingBehavior<,>));
-
-            //services.AddValidatorsFromAssembly(typeof(Startup).Assembly);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -56,13 +53,9 @@ namespace CQRS.MediatR.API
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "CQRS.MediatR.API v1"));
             }
-
             app.UseHttpsRedirection();
-
             app.UseRouting();
-
             app.UseAuthorization();
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

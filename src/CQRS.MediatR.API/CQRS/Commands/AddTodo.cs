@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using CQRS.MediatR.API.Database;
 using CQRS.MediatR.API.Database.Entities;
 using CQRS.MediatR.API.DTOs;
-using CQRS.MediatR.API.Validations;
+using FluentValidation;
 using MediatR;
 
 namespace CQRS.MediatR.API.CQRS.Commands
@@ -16,28 +16,6 @@ namespace CQRS.MediatR.API.CQRS.Commands
         public record Command(string Name) : IRequest<Response>;
 
         // Validator
-        public class Validator : IValidationHandler<Command>
-        {
-            private readonly TodoRepository _todoRepository;
-
-            public Validator(TodoRepository todoRepository)
-            {
-                _todoRepository = todoRepository;
-            }
-
-            public async Task<ValidationResult> Validate(Command request)
-            {
-                ValidationResult result = ValidationResult.Success;
-                if (_todoRepository.Todos.Any(x => x.Name.Equals(request.Name, StringComparison.OrdinalIgnoreCase)))
-                {
-                    result = ValidationResult.Fail("Item already exists");
-                }
-
-                return await Task.FromResult(result);
-            }
-        }
-
-        /* TODO: See if you can implement FluentValidations
         public class AddTodoValidator : AbstractValidator<Command>
         {
             private readonly TodoRepository _todoRepository;
@@ -62,8 +40,7 @@ namespace CQRS.MediatR.API.CQRS.Commands
 
                 return true;
             }
-        }        
-        */
+        }
 
         // Handler
         public class Handler : IRequestHandler<Command, Response>

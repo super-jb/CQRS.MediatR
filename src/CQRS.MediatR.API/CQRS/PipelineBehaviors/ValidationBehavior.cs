@@ -4,7 +4,8 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using CQRS.MediatR.API.DTOs;
-using CQRS.MediatR.API.Validations;
+using FluentValidation;
+using FluentValidation.Results;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -14,15 +15,15 @@ namespace CQRS.MediatR.API.CQRS.PipelineBehaviors
         where TResponse : CqrsResponse, new()
     {
         private readonly ILogger<ValidationBehavior<TRequest, TResponse>> _logger;
-        private readonly IValidationHandler<TRequest> _validationHandler;
-        
+        private readonly IValidator<TRequest> _validationHandler;
+
         // Have 2 constructors in case the validator does not exist
         public ValidationBehavior(ILogger<ValidationBehavior<TRequest, TResponse>> logger)
         {
             _logger = logger;
         }
 
-        public ValidationBehavior(ILogger<ValidationBehavior<TRequest, TResponse>> logger, IValidationHandler<TRequest> validationHandler)
+        public ValidationBehavior(ILogger<ValidationBehavior<TRequest, TResponse>> logger, IValidator<TRequest> validationHandler)
             :this(logger)
         {
             _validationHandler = validationHandler;
@@ -37,11 +38,11 @@ namespace CQRS.MediatR.API.CQRS.PipelineBehaviors
                 return await next();
             }
 
-            ValidationResult result = await _validationHandler.Validate(request);
-            if (!result.IsSuccessful)
+            ValidationResult result = await _validationHandler.ValidateAsync(request, cancellationToken);
+            if (!result.IsValid)
             {
-                _logger.LogWarning($"Validation failed for {requestName}. Error: {result.Error}");
-                return new TResponse { StatusCode = HttpStatusCode.BadRequest, ErrorMessage = result.Error};
+                _logger.LogWarning($"Validation failed for {requestName}. Error: { string.Join(',', result.Errors.Select(x => x.ErrorMessage)) }");
+                return new TResponse { StatusCode = HttpStatusCode.BadRequest, ErrorMessage = string.Join(',', result.Errors.Select(x => x.ErrorMessage)) };
             }
 
             _logger.LogInformation($"Validation successful for {requestName}.");

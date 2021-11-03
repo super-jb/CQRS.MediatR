@@ -9,7 +9,7 @@ using MediatR;
 
 namespace CQRS.MediatR.API.CQRS.Queries
 {
-    public static class GetTodoById
+    public class GetTodoById
     {
         // Query or Command: all the data needed to execute request
         public record Query(int Id) : IRequest<Response>, ICacheable

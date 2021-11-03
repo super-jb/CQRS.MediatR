@@ -7,6 +7,9 @@ namespace CQRS.MediatR.API.Filters
 {
     public class ResponseMappingFilter : IActionFilter
     {
+        /// <summary>
+        ///  Will map any ErrorStatusCode to http result status code
+        /// </summary>
         public void OnActionExecuted(ActionExecutedContext context)
         {
             if (context.Result is ObjectResult { Value: CqrsResponse cqrsResponse } && cqrsResponse.StatusCode != HttpStatusCode.OK)
