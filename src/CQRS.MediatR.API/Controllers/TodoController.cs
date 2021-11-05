@@ -21,15 +21,15 @@ namespace CQRS.MediatR.API.Controllers
         [HttpGet("/{id}")]
         public async Task<ActionResult<Todo>> GetById(int id)
         {
-            GetTodoById.Response response = await _mediator.Send(new GetTodoById.Query(id));
+            GetTodoByIdResponse response = await _mediator.Send(new GetTodoByIdQuery(id));
 
             return response == null ? NotFound() : Ok(response);
         }
 
         [HttpPost]
-        public async Task<ActionResult<AddTodo.Response>> Add([FromBody] AddTodo.Command command)
+        public async Task<ActionResult<AddTodoResponse>> Add([FromBody] AddTodoCommand command)
         {
-            AddTodo.Response response = await _mediator.Send(new AddTodo.Command(command.Name));
+            AddTodoResponse response = await _mediator.Send(new AddTodoCommand(command.Name));
 
             return Ok(response);
         }
